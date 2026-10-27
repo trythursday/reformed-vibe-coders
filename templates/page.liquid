@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }}</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/trythursday/fieber@main/fieber.css"
+    />
+    <style>
+      h1 {
+        text-align: center;
+      }
+
+      blockquote.pledge {
+        text-align: center;
+      }
+
+      .pledges {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .pledges li {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding-block: 0.75rem;
+        border-bottom: 1px solid var(--c-tag-bg);
+      }
+
+      @media (min-width: 769px) {
+        .pledges li {
+          flex-direction: row;
+          flex-wrap: wrap;
+          align-items: baseline;
+          gap: 0.5ch;
+        }
+
+        .pledges .pledge-date {
+          margin-inline-start: auto;
+        }
+      }
+
+      .pager {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-block-start: 3rem;
+      }
+
+      .pledge-cta {
+        margin-block: 2rem 3rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Have You Considered Building Less?</h1>
+    </header>
+
+    <main>
+      {% if form %}
+      <blockquote class="pledge">
+        {% for line in pledgeLines -%}
+        {{ line }}{% unless forloop.last %}<br />{% endunless %}
+        {% endfor -%}
+      </blockquote>
+
+      <script
+        type="module"
+        src="{{ prefix }}components/reformed-vibe-coders.js"
+      ></script>
+
+      <reformed-vibe-coders
+        repo="{{ repo }}"
+        endpoint="{{ endpoint }}"
+      ></reformed-vibe-coders>
+      {% endif %}
+
+      {% if pledgeNow %}
+      <p class="pledge-cta">
+        {% if coders == 1 %}1 coder has put their tokens where their mouth is{% else %}{{ coders }} coders put their tokens where their mouth is{% endif %}.
+        <a href="{{ prefix }}">Take the pledge today</a>.
+      </p>
+      {% endif %}
+
+      <section>
+        <h2>
+          {{ heading }}{% if seeAll %} <span class="muted"><a href="{{ prefix }}0000/">See all</a></span>{% endif %}
+        </h2>
+        <ul class="pledges">
+          {% for pledge in pledges %}
+          <li>
+            <strong>@{{ pledge.author }}</strong>
+            {% if pledge.website %}<a href="{{ pledge.website }}">{{ pledge.website }}</a>{% endif %}
+            pledged {{ pledge.tokensLabel }} tokens
+            <a class="pledge-date" href="{{ pledge.url }}">{{ pledge.date }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      {% if newer or older %}
+      <nav class="pager">
+        {% if newer %}<a href="{{ newer }}">← newer</a>{% else %}<span></span>{% endif %}
+        {% if older %}<a href="{{ older }}">older →</a>{% else %}<span></span>{% endif %}
+      </nav>
+      {% endif %}
+    </main>
+
+    <footer>
+      <p class="muted">
+        Submitting posts your pledge as a comment on the pledge list.
+      </p>
+    </footer>
+  </body>
+</html>
