@@ -28,6 +28,7 @@ const ENDPOINT =
   process.env.PLEDGE_ENDPOINT ??
   "https://reformed-vibe-coders.me-5db.workers.dev/api/pledge";
 const OUT = process.env.OUT_DIR ?? ".";
+const SITE_DOMAIN = process.env.SITE_DOMAIN ?? "reform.trythursday.org";
 const PER_PAGE = 50;
 const ON_ROOT = 10;
 
@@ -203,6 +204,7 @@ const pages = lastPage + 1;
 const coders = new Set(pledges.map((pledge) => pledge.author)).size;
 
 mkdirSync(OUT, { recursive: true });
+writeFileSync(join(OUT, "CNAME"), `${SITE_DOMAIN}\n`);
 
 if (existsSync(OUT)) {
   for (const name of readdirSync(OUT)) {
