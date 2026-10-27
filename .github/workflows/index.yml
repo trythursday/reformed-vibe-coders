@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: pledge-index
@@ -18,11 +16,8 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name != 'issue_comment' || github.event.issue.number == fromJSON(vars.PLEDGE_ISSUE || '2')
+    if: github.event_name != 'issue_comment' || github.event.issue.number == fromJSON(vars.PLEDGE_ISSUE || '1')
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -37,26 +32,15 @@ jobs:
         run: bun scripts/build-index.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PLEDGE_ISSUE: ${{ vars.PLEDGE_ISSUE || '2' }}
+          PLEDGE_ISSUE: ${{ vars.PLEDGE_ISSUE || '1' }}
+          OUT_DIR: site
 
-      - name: Commit if changed
+      - name: Publish to the site branch
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cd site
+          git init -q -b site
           git add -A
-          if git diff --cached --quiet; then
-            echo "no changes"
-          else
-            git commit -m "Rebuild pledge index"
-            git push
-          fi
-
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-
-      - name: Deploy
-        id: deploy
-        uses: actions/deploy-pages@v4
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -qm "Publish ${GITHUB_SHA::7}"
+          git push -f origin site
