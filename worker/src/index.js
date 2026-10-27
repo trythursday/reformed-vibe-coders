@@ -176,6 +176,28 @@ async function fetchComments(repo, issue, token) {
 const isPledge = (body) =>
   /data-tokens="\d+"/.test(body) || /^###\s+Monthly Token Pledge/mi.test(body);
 
+function pledgePage(body) {
+  const link = body.match(/^\[See this pledge on the list\]\(([^)]+)\)/m);
+  const page = link?.[1].match(/\/(\d{4})\/?$/);
+
+  return page ? Number(page[1]) : null;
+}
+
+function nextPage(pledges) {
+  const pages = pledges
+    .map((comment) => pledgePage(comment.body ?? ""))
+    .filter((page) => page !== null);
+
+  if (pages.length === 0) return 0;
+
+  const last = Math.max(...pages);
+  const filled = pledges.filter(
+    (comment) => pledgePage(comment.body ?? "") === last,
+  ).length;
+
+  return filled < PAGE_SIZE ? last : last + 1;
+}
+
 async function pledgeComment(pledge, token, login, env) {
   const repo = env.PLEDGE_REPO ?? "trythursday/reformed-vibe-coders";
   const issue = Number(env.PLEDGE_ISSUE ?? 1);
@@ -191,9 +213,8 @@ async function pledgeComment(pledge, token, login, env) {
 
   if (mine) return mine.html_url;
 
-  const page = Math.floor(
-    comments.filter((comment) => isPledge(comment.body ?? "")).length / PAGE_SIZE,
-  );
+  const pledges = comments.filter((comment) => isPledge(comment.body ?? ""));
+  const page = nextPage(pledges);
 
   const body = [
     `[See this pledge on the list](${site}/${String(page).padStart(4, "0")}/)`,

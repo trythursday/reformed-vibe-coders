@@ -4,6 +4,7 @@ import { Liquid } from "liquidjs";
 
 interface Pledge {
   id: number;
+  page: number | null;
   author: string;
   url: string;
   createdAt: string;
@@ -104,6 +105,13 @@ function parse(
   };
 }
 
+function pledgePage(body: string): number | null {
+  const link = body.match(/^\[See this pledge on the list\]\(([^)]+)\)/m);
+  const page = link?.[1].match(/\/(\d{4})\/?$/);
+
+  return page ? Number(page[1]) : null;
+}
+
 const formatTokens = (tokens: number): string => {
   if (tokens % 1_000_000 === 0) {
     return tokens >= 1_000_000_000
@@ -143,6 +151,7 @@ async function fetchPledges(): Promise<Pledge[]> {
 
       pledges.push({
         id: comment.id,
+        page: pledgePage(comment.body ?? ""),
         author: comment.user?.login ?? "ghost",
         url: comment.html_url,
         createdAt: comment.created_at,
@@ -180,10 +189,18 @@ const render = (data: Record<string, unknown>): Promise<string> =>
   });
 
 const pledges = await fetchPledges();
-const pages = Math.max(1, Math.ceil(pledges.length / PER_PAGE));
-const coders = new Set(pledges.map((pledge) => pledge.author)).size;
-
 const chronological = [...pledges].reverse();
+
+chronological.forEach((pledge, index) => {
+  if (pledge.page === null) pledge.page = Math.floor(index / PER_PAGE);
+});
+
+const lastPage = chronological.reduce(
+  (max, pledge) => Math.max(max, pledge.page ?? 0),
+  0,
+);
+const pages = lastPage + 1;
+const coders = new Set(pledges.map((pledge) => pledge.author)).size;
 
 mkdirSync(OUT, { recursive: true });
 
@@ -225,7 +242,7 @@ for (let index = 0; index < pages; index++) {
       coders,
       seeAll: false,
       pledges: chronological
-        .slice(index * PER_PAGE, (index + 1) * PER_PAGE)
+        .filter((pledge) => pledge.page === index)
         .map(view),
       older: index > 0 ? `../${dir(index - 1)}` : null,
       newer: index < pages - 1 ? `../${dir(index + 1)}` : null,
