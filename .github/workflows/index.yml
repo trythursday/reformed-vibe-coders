@@ -39,6 +39,7 @@ jobs:
         run: |
           cd site
           git init -q -b site
+          git remote add origin "$(git -C .. config --get remote.origin.url)"
           git add -A
           git -c user.name="github-actions[bot]" \
               -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
