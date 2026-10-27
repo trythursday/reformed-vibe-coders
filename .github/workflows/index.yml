@@ -36,12 +36,13 @@ jobs:
           OUT_DIR: site
 
       - name: Publish to the site branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd site
           git init -q -b site
-          git remote add origin "$(git -C .. config --get remote.origin.url)"
           git add -A
           git -c user.name="github-actions[bot]" \
               -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
               commit -qm "Publish ${GITHUB_SHA::7}"
-          git push -f origin site
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" site
