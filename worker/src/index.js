@@ -1,6 +1,7 @@
 const GITHUB = "https://github.com";
 const API = "https://api.github.com";
 const BUDGETS = [10_000_000, 100_000_000, 500_000_000, 1_000_000_000];
+const PAGE_SIZE = 50;
 
 const encoder = new TextEncoder();
 
@@ -152,7 +153,9 @@ async function github(path, token, init = {}) {
   });
 }
 
-async function existingPledge(repo, issue, token, login) {
+async function fetchComments(repo, issue, token) {
+  const comments = [];
+
   for (let page = 1; page <= 10; page++) {
     const response = await github(
       `/repos/${repo}/issues/${issue}/comments?per_page=100&page=${page}`,
@@ -161,28 +164,46 @@ async function existingPledge(repo, issue, token, login) {
 
     if (!response.ok) throw new Error("Could not read the pledge list.");
 
-    const comments = await response.json();
-    const mine = comments.find(
-      (comment) => comment.user?.login?.toLowerCase() === login.toLowerCase(),
-    );
+    const batch = await response.json();
 
-    if (mine) return mine.html_url;
-    if (comments.length < 100) break;
+    comments.push(...batch);
+    if (batch.length < 100) break;
   }
 
-  return null;
+  return comments;
 }
+
+const isPledge = (body) =>
+  /data-tokens="\d+"/.test(body) || /^###\s+Monthly Token Pledge/mi.test(body);
 
 async function pledgeComment(pledge, token, login, env) {
   const repo = env.PLEDGE_REPO ?? "trythursday/reformed-vibe-coders";
   const issue = Number(env.PLEDGE_ISSUE ?? 1);
+  const site = (env.PLEDGE_SITE ?? "https://reform.trythursday.org").replace(
+    /\/$/,
+    "",
+  );
 
-  const existing = await existingPledge(repo, issue, token, login);
-  if (existing) return existing;
+  const comments = await fetchComments(repo, issue, token);
+  const mine = comments.find(
+    (comment) => comment.user?.login?.toLowerCase() === login.toLowerCase(),
+  );
+
+  if (mine) return mine.html_url;
+
+  const page = Math.floor(
+    comments.filter((comment) => isPledge(comment.body ?? "")).length / PAGE_SIZE,
+  );
+
+  const body = [
+    `[See this pledge on the list](${site}/${String(page).padStart(4, "0")}/)`,
+    "",
+    issueBody(pledge),
+  ].join("\n");
 
   const response = await github(`/repos/${repo}/issues/${issue}/comments`, token, {
     method: "POST",
-    body: JSON.stringify({ body: issueBody(pledge) }),
+    body: JSON.stringify({ body }),
   });
 
   const comment = await response.json().catch(() => null);

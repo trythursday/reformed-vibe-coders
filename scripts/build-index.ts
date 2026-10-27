@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { Liquid } from "liquidjs";
 
 interface Pledge {
+  id: number;
   author: string;
   url: string;
   createdAt: string;
@@ -12,6 +13,7 @@ interface Pledge {
 }
 
 interface GitHubComment {
+  id: number;
   body: string | null;
   html_url: string;
   created_at: string;
@@ -140,6 +142,7 @@ async function fetchPledges(): Promise<Pledge[]> {
       if (!parsed) continue;
 
       pledges.push({
+        id: comment.id,
         author: comment.user?.login ?? "ghost",
         url: comment.html_url,
         createdAt: comment.created_at,
@@ -158,6 +161,7 @@ async function fetchPledges(): Promise<Pledge[]> {
 }
 
 const view = (pledge: Pledge) => ({
+  id: pledge.id,
   author: pledge.author,
   website: pledge.website,
   url: pledge.url,
@@ -179,6 +183,8 @@ const pledges = await fetchPledges();
 const pages = Math.max(1, Math.ceil(pledges.length / PER_PAGE));
 const coders = new Set(pledges.map((pledge) => pledge.author)).size;
 
+const chronological = [...pledges].reverse();
+
 mkdirSync(OUT, { recursive: true });
 
 if (existsSync(OUT)) {
@@ -197,9 +203,10 @@ writeFileSync(
     pledgeNow: false,
     coders,
     seeAll: true,
+    seeAllHref: dir(pages - 1),
     pledges: pledges.slice(0, ON_ROOT).map(view),
     newer: null,
-    older: pledges.length > ON_ROOT ? dir(0) : null,
+    older: null,
   }),
 );
 
@@ -217,9 +224,11 @@ for (let index = 0; index < pages; index++) {
       pledgeNow: true,
       coders,
       seeAll: false,
-      pledges: pledges.slice(index * PER_PAGE, (index + 1) * PER_PAGE).map(view),
-      newer: index > 0 ? `../${dir(index - 1)}` : null,
-      older: index < pages - 1 ? `../${dir(index + 1)}` : null,
+      pledges: chronological
+        .slice(index * PER_PAGE, (index + 1) * PER_PAGE)
+        .map(view),
+      older: index > 0 ? `../${dir(index - 1)}` : null,
+      newer: index < pages - 1 ? `../${dir(index + 1)}` : null,
     }),
   );
 }

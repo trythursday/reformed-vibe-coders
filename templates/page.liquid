@@ -89,11 +89,11 @@
 
       <section>
         <h2>
-          {{ heading }}{% if seeAll %} <span class="muted"><a href="{{ prefix }}0000/">See all</a></span>{% endif %}
+          {{ heading }}{% if seeAll %} <span class="muted"><a href="{{ seeAllHref }}">See all</a></span>{% endif %}
         </h2>
         <ul class="pledges">
           {% for pledge in pledges %}
-          <li>
+          <li id="issuecomment-{{ pledge.id }}">
             <strong>@{{ pledge.author }}</strong>
             {% if pledge.website %}<a href="{{ pledge.website }}">{{ pledge.website }}</a>{% endif %}
             pledged {{ pledge.tokensLabel }} tokens
@@ -105,8 +105,8 @@
 
       {% if newer or older %}
       <nav class="pager">
-        {% if newer %}<a href="{{ newer }}">← newer</a>{% else %}<span></span>{% endif %}
-        {% if older %}<a href="{{ older }}">older →</a>{% else %}<span></span>{% endif %}
+        {% if older %}<a href="{{ older }}">← older</a>{% else %}<span></span>{% endif %}
+        {% if newer %}<a href="{{ newer }}">newer →</a>{% else %}<span></span>{% endif %}
       </nav>
       {% endif %}
     </main>
