@@ -16,7 +16,6 @@ interface Pledge {
   url: string;
   createdAt: string;
   tokens: number;
-  things: string | null;
   website: string | null;
 }
 
@@ -74,13 +73,10 @@ function parseTokens(budget: string | null): number | null {
   return null;
 }
 
-function parse(
-  body: string,
-): Pick<Pledge, "tokens" | "things" | "website"> | null {
+function parse(body: string): Pick<Pledge, "tokens" | "website"> | null {
   let section: string | null = null;
   let budget: string | null = null;
   let website: string | null = null;
-  const things: string[] = [];
 
   for (const line of body.split("\n")) {
     const heading = line.match(/^#{1,6}\s+(.*)$/);
@@ -95,7 +91,6 @@ function parse(
       continue;
     }
 
-    if (section === "things i would like to build") things.push(line);
     if (section === "website, linkedin, or twitter" && !website && line.trim()) {
       website = line.trim();
     }
@@ -106,11 +101,7 @@ function parse(
 
   if (!tokens) return null;
 
-  return {
-    tokens,
-    things: things.join("\n").trim() || null,
-    website,
-  };
+  return { tokens, website };
 }
 
 function pledgePage(body: string): number | null {
