@@ -1,4 +1,11 @@
-import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { Liquid } from "liquidjs";
 
@@ -205,6 +212,12 @@ const coders = new Set(pledges.map((pledge) => pledge.author)).size;
 
 mkdirSync(OUT, { recursive: true });
 writeFileSync(join(OUT, "CNAME"), `${SITE_DOMAIN}\n`);
+
+cpSync(
+  new URL("../components", import.meta.url).pathname,
+  join(OUT, "components"),
+  { recursive: true },
+);
 
 if (existsSync(OUT)) {
   for (const name of readdirSync(OUT)) {
