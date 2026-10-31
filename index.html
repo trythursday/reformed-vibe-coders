@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Have You Considered Building Less?</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/trythursday/fieber@main/fieber.css"
+    />
+    <style>
+      h1 {
+        text-align: center;
+      }
+
+      blockquote.pledge {
+        text-align: center;
+      }
+
+      .pledges {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .pledges li {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding-block: 0.75rem;
+        border-bottom: 1px solid var(--c-tag-bg);
+      }
+
+      @media (min-width: 769px) {
+        .pledges li {
+          flex-direction: row;
+          flex-wrap: wrap;
+          align-items: baseline;
+          gap: 0.5ch;
+        }
+
+        .pledges .pledge-date {
+          margin-inline-start: auto;
+        }
+      }
+
+      .pager {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-block-start: 3rem;
+      }
+
+      .pledge-cta {
+        margin-block: 2rem 3rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Have You Considered Building Less?</h1>
+    </header>
+
+    <main>
+      
+      <blockquote class="pledge">
+        I will not add more slop to the world.<br />
+        I will use AI to build things for people, not merely to generate more software.<br />
+        I will spend complexity where it is necessary, and resist it where it isn&#39;t.<br />
+        I will treat generated code as something I am responsible for,<br />
+        not something I can blame on the machine.<br />
+        I will remember that the goal is to solve a problem, not to produce code.
+        </blockquote>
+
+      <script
+        type="module"
+        src="components/reformed-vibe-coders.js"
+      ></script>
+
+      <reformed-vibe-coders
+        repo="trythursday/reformed-vibe-coders"
+        endpoint="https://reformed-vibe-coders.me-5db.workers.dev/api/pledge"
+      ></reformed-vibe-coders>
+      
+
+      
+
+      <section>
+        <h2>
+          Recent pledges <span class="muted"><a href="0000/">See all</a></span>
+        </h2>
+        <ul class="pledges">
+          
+          <li id="issuecomment-6464460871">
+            <strong>@xyzshantaram</strong>
+            <a href="https://shantaram.xyz">https://shantaram.xyz</a>
+            pledged 1B tokens
+            <a class="pledge-date" href="https://github.com/trythursday/reformed-vibe-coders/issues/1#issuecomment-6464460871">2026-10-28</a>
+          </li>
+          
+        </ul>
+      </section>
+
+      
+    </main>
+
+    <footer>
+      <p class="muted">
+        Submitting posts your pledge as a comment on the pledge list.
+      </p>
+    </footer>
+  </body>
+</html>
